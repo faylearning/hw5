@@ -17,6 +17,7 @@ int main(int argc, char* argv[])
                 " and optional string of floating characters." << endl;
         return 1;
     }
+
     const std::set<std::string>& dict = readDictWords("dict-eng.txt");    
     string in(argv[1]);
     string floatingChars;
