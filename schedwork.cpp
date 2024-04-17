@@ -28,7 +28,7 @@ static const Worker_T INVALID_ID = (unsigned int)-1;
 //vector sched
 
 
-bool schedRecurse(Worker_T totWorkers, int currDay, size_t currNeed, DailySchedule& sched, 
+bool schedRecurse(Worker_T currWorker, Worker_T totWorkers, int currDay, size_t currNeed, DailySchedule& sched, 
                   const AvailabilityMatrix& avail, vector<size_t>& shiftsWorked, 
                   const size_t maxShifts, const size_t dailyNeed){
     
@@ -37,41 +37,45 @@ bool schedRecurse(Worker_T totWorkers, int currDay, size_t currNeed, DailySchedu
         return true;
     }
 
-    for (Worker_T currWorker = 0; currWorker < totWorkers; currWorker++){
+    for (Worker_T Worker = currWorker; Worker < totWorkers; Worker++){
         if (currNeed >= dailyNeed){
             break;
         }
 
-        bool worked = false;
-        for ( size_t d=0; d < dailyNeed; d++){
-            if ( sched[currDay][d] == currWorker ){
-                worked = true;
-                break;
-            }
-        }
-        if (worked) continue;
+        // bool worked = false;
+        // for (size_t d=0; d < dailyNeed; d++){
+        //     if (sched[currDay][d] == currWorker){
+        //         worked = true;
+        //         break;
+        //     }
+        // }
 
-        if ((avail[currDay][currWorker] != true) || (shiftsWorked[currWorker] >= maxShifts)){
+        // if (worked) continue;
+
+        if ((avail[currDay][Worker] != true) || (shiftsWorked[Worker] >= maxShifts)){
             continue;
         }
 
-        sched[currDay][currNeed] = currWorker;
-        shiftsWorked[currWorker]++;
+        sched[currDay][currNeed] = Worker;
+        shiftsWorked[Worker]++;
+        // map<Worker_T, bool>
+        currWorker++;
 
         size_t nextDay = currDay;
         size_t nextNeed = currNeed;
         if ( nextNeed + 1 == dailyNeed){
             nextDay = currDay + 1;
             nextNeed = 0;
+            currWorker = 0;
         }else
             nextNeed ++;
 
-        bool ret = schedRecurse(totWorkers, nextDay, nextNeed, sched, avail, shiftsWorked, maxShifts, dailyNeed);
+        bool ret = schedRecurse(currWorker, totWorkers, nextDay, nextNeed, sched, avail, shiftsWorked, maxShifts, dailyNeed);
 
         if (ret == true){
             return true;
         }
-        shiftsWorked[currWorker]--;
+        shiftsWorked[Worker]--;
     }
     sched[currDay][currNeed] = INVALID_ID;
     return false;
@@ -141,7 +145,7 @@ bool schedule(
         sched.push_back(schedRow);
     }
 
-    return schedRecurse(totWorkers, 0, 0, sched, avail, shiftsWorked, maxShifts, dailyNeed);
+    return schedRecurse(0, totWorkers, 0, 0, sched, avail, shiftsWorked, maxShifts, dailyNeed);
 
 }
 
